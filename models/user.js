@@ -18,6 +18,6 @@ const UserSchema = new mongoose.Schema({
     unique: true,
     trim: true,
   },
-});
+}); 
 
 module.exports = mongoose.model('User',UserSchema);

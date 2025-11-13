@@ -26,7 +26,7 @@ router.post("/api/register", async (req, res) => {
   } catch (error) {
     res.status(500).json({error:'Internal Server Error'})
   }
-});
+}); 
 
 router.post("/api/login", async(req,res)=>{
     try {

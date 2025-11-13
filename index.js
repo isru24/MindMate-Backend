@@ -8,7 +8,7 @@ mongoose.connect('mongodb://localhost:27017/MindMate')
 })
 .catch(()=>{
     console.error('Error Connecting Database')
-})
+}) 
 
 const app = express();
 app.use(express.json())
