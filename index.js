@@ -1,24 +1,27 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const userRoutes = require('./routes/route')
+import express from "express";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import userRoutes from "./routes/auth.js";
+import chatBot from "./routes/chatbot.js";
 
-mongoose.connect('mongodb://localhost:27017/MindMate')
-.then(()=>{
-    console.log('Database Connected')
-})
-.catch(()=>{
-    console.error('Error Connecting Database')
-}) 
+dotenv.config();
+
+mongoose.connect("mongodb://localhost:27017/MindMate")
+  .then(() => console.log("Database Connected"))
+  .catch((err) => console.error("Error Connecting Database", err));
 
 const app = express();
-app.use(express.json())
-app.use(userRoutes)
-const port = 3000;
+app.use(express.json());
 
-app.listen(port,()=>{
-    console.log(`Serrver running on port ${port}`)
-})
+app.use(chatBot);
+app.use(userRoutes);
 
-app.get('/',(req,res)=>{
-    res.status(200).json({message:'Hello'})
-})
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
+
+app.get("/", (req, res) => {
+  res.status(200).json({ message: "Hello" });
+});
+
