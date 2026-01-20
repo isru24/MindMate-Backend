@@ -17,7 +17,7 @@ const upload = multer({
 
 const video = express.Router();
 
-video.post("/upload", upload.single("video"), async (req, res) => {
+video.post("/video/upload", upload.single("video"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: "No video file uploaded" });
@@ -49,9 +49,9 @@ video.post("/upload", upload.single("video"), async (req, res) => {
     res.status(500).json(error);
   }
 });
-video.get("/test", (req, res) => {
-  res.send("Video route is working!");
-});
+// video.get("/test", (req, res) => {
+//   res.send("Video route is working!");
+// });
 
 
 export default video;

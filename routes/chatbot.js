@@ -11,7 +11,7 @@ chat.post("/chat", async (req, res) => {
   try {
     const userMessage = req.body.message;
     const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.CHATBOT_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${process.env.CHATBOT_API_KEY}`,
       {
         contents: [
           {
@@ -24,8 +24,8 @@ chat.post("/chat", async (req, res) => {
     const reply = response.data.candidates[0].content.parts[0].text;
     res.json({ reply });
   } catch (error) {
-    res.status(500).json({ error: "Chat-Bot Error " });
+    res.status(500).json({ error: error.response?.data || error.message });
   }
 });
 
-export default chat
+export default chat;
