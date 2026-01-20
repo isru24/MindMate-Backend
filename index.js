@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import userRoutes from "./routes/auth.js";
 import chatBot from "./routes/chatbot.js";
+import video from "./resources/video.js";
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ const app = express();
 app.use(express.json());
 
 app.use(chatBot);
+app.use(video);
 app.use(userRoutes);
 
 const port = process.env.PORT || 3000;
