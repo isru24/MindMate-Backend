@@ -5,6 +5,7 @@ import userRoutes from "./routes/auth.js";
 import chatBot from "./routes/chatbot.js";
 import video from "./resources/video.js";
 import audio from "./resources/audio.js";
+import mood from "./mood_tracker/moodTracker.js";
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use(express.json());
 // });
 
 app.use(chatBot);
+app.use("/mood",mood)
 app.use("/video",video);
 app.use("/audio",audio);
 app.use(userRoutes);
