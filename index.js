@@ -4,8 +4,10 @@ import dotenv from "dotenv";
 import userRoutes from "./routes/auth.js";
 import chatBot from "./routes/chatbot.js";
 import video from "./resources/video.js";
+import audio from "./resources/audio.js";
 
 dotenv.config();
+
 
 mongoose.connect("mongodb://localhost:27017/MindMate")
   .then(() => console.log("Database Connected"))
@@ -14,8 +16,14 @@ mongoose.connect("mongodb://localhost:27017/MindMate")
 const app = express();
 app.use(express.json());
 
+// app.use((req, res, next) => {
+//   console.log(req.method, req.url);
+//   next();
+// });
+
 app.use(chatBot);
-app.use(video);
+app.use("/video",video);
+app.use("/audio",audio);
 app.use(userRoutes);
 
 const port = process.env.PORT || 3000;
