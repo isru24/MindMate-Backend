@@ -43,7 +43,8 @@ mood.get("/:userId", async (req, res) => {
   try {
     const moods = await Mood.find({ userId: req.params.userId })
       .sort({ date: -1 })
-      .limit(5);
+      .limit(1)
+      .select("mood -_id");
     res.json(moods);
   } catch (error) {
     res.status(500).json(error);
