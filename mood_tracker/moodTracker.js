@@ -27,7 +27,7 @@ mood.post("/submit", async (req, res) => {
 });
 mood.get("/:userId", async (req, res) => {
   try {
-    const moods = await Moods.find({ userId: req.params.userId })
+    const moods = await moods.find({ userId: req.params.userId })
       .sort({ date: -1 })
       .limit(5);
     res.json(moods);
