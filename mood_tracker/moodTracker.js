@@ -1,5 +1,6 @@
 import express from "express";
 import Mood from "../models/moodSchema.js";
+import moodStreak from "./mood_streak.js";
 
 const mood = express.Router();
 
@@ -25,9 +26,22 @@ mood.post("/submit", async (req, res) => {
     res.status(500).json(error);
   }
 });
+
+mood.get("/streak/:userId", async (req, res) => {
+  try {
+    const moods = await Mood.find({ userId: req.params.userId })
+      .sort({ date: -1 })
+      .limit(30);
+    const streak = moodStreak(moods);
+    res.json({ streak });
+  } catch (error) {
+    res.status(500).json(error)
+  }
+});
+
 mood.get("/:userId", async (req, res) => {
   try {
-    const moods = await moods.find({ userId: req.params.userId })
+    const moods = await Mood.find({ userId: req.params.userId })
       .sort({ date: -1 })
       .limit(5);
     res.json(moods);
@@ -35,4 +49,6 @@ mood.get("/:userId", async (req, res) => {
     res.status(500).json(error);
   }
 });
+
+
 export default mood;
