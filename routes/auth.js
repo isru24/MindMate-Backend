@@ -9,7 +9,7 @@ router.post("/api/register", async (req, res) => {
   try {
     const existingEmail = await User.findOne({email:req.body.email});
     if (existingEmail) {
-        return res.status(400).json({error:"Email Alredyb exists"});
+        return res.status(400).json({error:"Email Alredy exists"});
     }
     const existingName = await User.findOne({name:req.body.name});
     if (existingName) {
