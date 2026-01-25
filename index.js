@@ -10,7 +10,7 @@ import mood from "./mood_tracker/moodTracker.js";
 dotenv.config();
 
 
-mongoose.connect("mongodb://localhost:27017/MindMate")
+mongoose.connect("mongodb://localhost:27017/mindmate")
   .then(() => console.log("Database Connected"))
   .catch((err) => console.error("Error Connecting Database", err));
 
