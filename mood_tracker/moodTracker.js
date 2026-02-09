@@ -1,4 +1,5 @@
 import express from "express";
+import mongoose from "mongoose";
 import Mood from "../models/moodSchema.js";
 import moodStreak from "./mood_streak.js";
 
@@ -39,21 +40,14 @@ mood.get("/streak/:userId", async (req, res) => {
   }
 });
 
-mood.get("/:userId", async (req, res) => {
-  try {
-    const moods = await Mood.find({ userId: req.params.userId })
-      .sort({ date: -1 })
-      .limit(1)
-      .select("mood -_id");
-    res.json(moods);
-  } catch (error) {
-    res.status(500).json(error);
-  }
-});
-
-mood.get("/average/:userId",async(req,res)=>{
+mood.get("/average/:userId", async (req, res) => {
   try {
     const userId = req.params.userId;
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: "Invalid userId" });
+    }
+
     const today = new Date();
     const lastWeek = new Date();
     lastWeek.setDate(today.getDate() - 6);
@@ -62,32 +56,48 @@ mood.get("/average/:userId",async(req,res)=>{
     const endDate = today.toISOString().split("T")[0];
 
     const moods = await Mood.find({
-      userId,
-      date: {$gte: startDate , $lie: endDate},
+      userId: new mongoose.Types.ObjectId(userId),
+      date: { $gte: startDate, $lte: endDate }
     }).select("mood -_id");
+
     if (!moods.length) {
-      return res.json({averageMood: null});
+      return res.json({ averageScore: null });
     }
 
-    const MOOD_SCORES ={
-      sad: 1,
-      anxious: 2,
-      angry: 3,
-      happy: 4,
-      calm: 5
-    }
-    const total = moods.reduce((sum,m)=>{
-      return sum + (MOOD_SCORES[m.mood] || 0);
-    },0);
-    const averageScore = total/moods.length;
+    const MOOD_SCORES = {
+      Great: 1,
+      Good: 2,
+      Okay: 3,
+      Sad: 4,
+      Stressed: 5
+    };
+
+    const total = moods.reduce((sum, m) => sum + (MOOD_SCORES[m.mood] || 0), 0);
+    const averageScore = total / moods.length;
+
     res.json({
-      averageScore: Number(averageScore.toFixed()),
+      averageScore: Number(averageScore.toFixed(1)),
       entries: moods.length
-    })
+    });
+
   } catch (error) {
-    res.status(500).json(error)
+    console.error(error);
+    res.status(500).json({ error: error.message });
   }
 });
 
+mood.get("/:userId", async (req, res) => {
+  try {
+    // Fetch last 7 moods, sorted descending by date
+    const moods = await Mood.find({ userId: req.params.userId })
+      .sort({ date: -1 })
+      .limit(7)
+      .select("mood date -_id"); // include 'date' field now
+
+    res.json(moods); // each item: { mood: "Good", date: "2026-02-09T00:00:00.000Z" }
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
 
 export default mood;

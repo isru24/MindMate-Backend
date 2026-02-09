@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
-router.post("/api/register", async (req, res) => {
+router.post("/register", async (req, res) => {
   try {
     const existingEmail = await User.findOne({email:req.body.email});
     if (existingEmail) {
@@ -28,7 +28,7 @@ router.post("/api/register", async (req, res) => {
   }
 }); 
 
-router.post("/api/login", async(req,res)=>{
+router.post("/login", async(req,res)=>{
     try {
         const user = await User.findOne({email:req.body.email});
         if (!user) {
@@ -38,11 +38,74 @@ router.post("/api/login", async(req,res)=>{
         if (!passwordMatch) {
             return res.status(400).json({error:"Invalid Password"})
         }
-        const token = jwt.sign({email:user.email},'secret');
+        const token = jwt.sign({_id: user._id,email:user.email,name: user.name},'secret');
         res.status(200).json({token,message:'User Logged in'});
     } catch (error) {
         res.status(500).json({error:'Internal Server Error'})
     }
-})
+});
+// Middleware to verify token
+const verifyToken = (req, res, next) => {
+  const token = req.headers['authorization']?.split(' ')[1];
+  if (!token) return res.status(401).json({error: 'No token provided'});
+
+  try {
+    const decoded = jwt.verify(token, 'secret');
+    req.userId = decoded._id;
+    next();
+  } catch {
+    res.status(401).json({error: 'Invalid token'});
+  }
+};
+
+// Get user info
+router.get("/user/:id", verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('-password');
+    if (!user) return res.status(404).json({error: 'User not found'});
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+});
+
+// Update user info (name/email)
+router.put("/user/update", verifyToken, async (req, res) => {
+  try {
+    const { name, email } = req.body;
+    const updateData = {};
+
+    if (name) updateData.name = name;
+    if (email) updateData.email = email;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.userId,
+      updateData,
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    res.json({ message: 'Profile updated', user: updatedUser });
+  } catch (error) {
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+});
+
+// Change password
+router.put("/user/change-password", verifyToken, async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    const user = await User.findById(req.userId);
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) return res.status(400).json({error: 'Old password is incorrect'});
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+});
 
 export default router
