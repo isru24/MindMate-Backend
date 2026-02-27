@@ -107,5 +107,22 @@ router.put("/user/change-password", verifyToken, async (req, res) => {
     res.status(500).json({error: 'Internal Server Error'});
   }
 });
+// GET /admin/users
+router.get("/users", async (req, res) => {
+  try {
+    const users = await User.find()
+      .select("name email createdAt")
+      .sort({ createdAt: -1 });
+
+    const totalUsers = await User.countDocuments();
+
+    res.json({
+      totalUsers,
+      users,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch users" });
+  }
+});
 
 export default router

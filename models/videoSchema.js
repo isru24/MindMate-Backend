@@ -1,18 +1,22 @@
 import mongoose from "mongoose";
 
-const VideoSchema = new mongoose.Schema({
-  title: String,
-  description: String,
-  videoUrl: String,
-  publicId: String,
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  published: {
-    type: Boolean,
-    default: true,
-  },
-});
+const mediaSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true },
+    description: String,
 
-export default mongoose.model('Video',VideoSchema);
+    type: {
+      type: String,
+      enum: ["video", "audio"],
+      required: true,
+    },
+
+    category: String,
+
+    mediaUrl: { type: String, required: true },
+    publicId: { type: String, required: true },
+  },
+  { timestamps: true }
+);
+
+export default mongoose.model("Media", mediaSchema);

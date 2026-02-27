@@ -18,6 +18,9 @@ const UserSchema = new mongoose.Schema({
     unique: true,
     trim: true,
   },
-}); 
+},
+  {
+    timestamps: true,
+  }); 
 
 export default mongoose.model('User',UserSchema);

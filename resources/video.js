@@ -13,6 +13,9 @@ cloudinary.config({
 
 const upload = multer({
   storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 100 * 1024 * 1024,
+  }
 });
 
 const video = express.Router();
@@ -20,38 +23,39 @@ const video = express.Router();
 video.post("/upload", upload.single("video"), async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: "No video file uploaded" });
+      return res.status(400).json({ message: "No file uploaded" });
     }
 
-    const stream = cloudinary.uploader.upload_stream(
+    cloudinary.uploader.upload_stream(
       {
-        resource_type: "video",
+        resource_type: "video", 
         folder: "MindMate_videos",
       },
       async (error, result) => {
-        if (error) {
-          return res.status(500).json(error);
-        }
+        if (error) return res.status(500).json(error);
 
-        const savedVideo = await Video.create({
+        const media = await Video.create({
           title: req.body.title,
           description: req.body.description,
-          videoUrl: result.secure_url,
+          category: req.body.category,
+          type: "video",
+          mediaUrl: result.secure_url,
           publicId: result.public_id,
         });
 
-        res.status(201).json(savedVideo);
+        res.status(201).json(media);
       }
-    );
-
-    stream.end(req.file.buffer);
-  } catch (error) {
-    res.status(500).json(error);
+    ).end(req.file.buffer);
+  } catch (err) {
+    res.status(500).json({ message: "Upload failed" });
   }
 });
-// video.get("/test", (req, res) => {
-//   res.send("Video route is working!");
-// });
+video.get("/", async (req, res) => {
+  const { type } = req.query;
 
+  const filter = type ? { type } : {};
+  const media = await Video.find(filter).sort({ createdAt: -1 });
+  res.json(media);
+});
 
 export default video;
