@@ -50,4 +50,13 @@ audio.post("/upload", upload.single("audio"), async (req, res) => {
   }
 });
 
+audio.get("/", async (req, res) => {
+  try {
+    const audios = await Audio.find().sort({ createdAt: -1 });
+    res.json(audios);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch audios" });
+  }
+});
+
 export default audio;

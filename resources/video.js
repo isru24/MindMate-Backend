@@ -50,12 +50,14 @@ video.post("/upload", upload.single("video"), async (req, res) => {
     res.status(500).json({ message: "Upload failed" });
   }
 });
-video.get("/", async (req, res) => {
-  const { type } = req.query;
 
-  const filter = type ? { type } : {};
-  const media = await Video.find(filter).sort({ createdAt: -1 });
-  res.json(media);
+video.get("/", async (req, res) => {
+  try {
+    const videos = await Video.find().sort({ createdAt: -1 });
+    res.json(videos);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch videos" });
+  }
 });
 
 export default video;
