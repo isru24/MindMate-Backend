@@ -1,6 +1,7 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import User from "../models/user.js";
+import Admin from "../models/adminSchema.js";
 import jwt from "jsonwebtoken";
 
 const router = express.Router();
@@ -123,6 +124,46 @@ router.get("/users", async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch users" });
   }
+});
+
+router.post("/admin/register", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const existingAdmin = await Admin.findOne({ email });
+    if (existingAdmin) {
+      return res.status(400).json({ message: "Admin already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+   const newAdmin = new Admin({
+        email:req.body.email,
+        password:hashedPassword
+    });
+    await newAdmin.save()
+
+    res.status(201).json({ message: "Admin created successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Registration failed" });
+  }
+});
+
+router.post("/admin/login", async(req,res)=>{
+    try {
+        const admin = await Admin.findOne({email:req.body.email});
+        if (!admin) {
+            return res.status(400).json({error:"Invalid Email"})
+        }
+        const passwordMatch = await bcrypt.compare(req.body.password,admin.password);
+        if (!passwordMatch) {
+            return res.status(400).json({error:"Invalid Password"})
+        }
+        const token = jwt.sign({_id: admin._id,email:admin.email,name: admin.name},'secret');
+        res.status(200).json({token,message:'Admin Logged in'});
+    } catch (error) {
+        res.status(500).json({error:'Internal Server Error'})
+    }
 });
 
 export default router
